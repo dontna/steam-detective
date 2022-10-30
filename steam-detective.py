@@ -339,7 +339,7 @@ class SteamSpy:
 
         return all_group_data
     
-    def games_get_achievements(self, profile_id: str, games_data: dict, using_custom_id: bool, keep_empy_data=False):
+    def games_get_achievements(self, profile_id: str, games_data: dict, using_custom_id: bool, show_update_messages: bool,keep_empy_data=False):
         ''' Get all achievements from users played games. 
         
             keep_empty_data: if set to True it will output everything, even games without any achievement data (Default: False)
@@ -364,7 +364,8 @@ class SteamSpy:
                 
                 achievements = r.html.find('.achieveRow')
 
-                print(f"Gathering achievements for {game_name}")
+                if show_update_messages:
+                    print(f"Gathering achievements for {game_name}")
                 
                 for achievement in achievements:
 
@@ -428,41 +429,52 @@ def main(profile_id: str, using_custom_id: bool):
 
     page_html = spy.general_get_page_html(profile_id, using_custom_id)
 
-    print(f"(1/9) Gathering info about '{profile_id}'")
     general_info_data = spy.general_get_basic_info(page_html)
 
-    print("(2/9) Getting VAC bans...")
     has_vacban = spy.profile_has_vacban(page_html)
 
-    print("(3/9) Gathering users games...")
+    filename, show_update_messages = menus.main_menu(general_info_data, profile_id)
+
+    os.system("cls" if os.name == 'nt' else 'clear') # Select the correct way to clear a screen, based on OS
+
+    # I know the if statement copy is bad, I'll fix it soon. No idea how yet.
+    if show_update_messages:
+        print("(1/7) Gathering users games...")
     game_data = spy.games_get_list(profile_id, using_custom_id)
 
-    print("(4/9) Gathering users friend data...")
+    if show_update_messages:
+        print("(2/7) Gathering users friend data...")
     friend_data = spy.friends_get_list(profile_id, using_custom_id)
 
-    print("(5/9) Getting award data...")
+    if show_update_messages:
+        print("(3/7) Getting award data...")
     award_data = spy.profile_get_awards(profile_id, using_custom_id)
 
-    print("(6/9) Getting badge data...")
+    if show_update_messages:
+        print("(4/7) Getting badge data...")
     badge_data = spy.profile_get_badges(profile_id, using_custom_id)
 
-    print("(7/9) Geting group data...")
+    if show_update_messages:
+        print("(5/7) Geting group data...")
     group_data = spy.profile_get_groups(profile_id, using_custom_id)
 
-    print("(8/9) Gathering achievement data...\nThis can take upwards of 5 minutes, depending on how many achievements you have, so why not make a cuppa tea.")
-    achievement_data = spy.games_get_achievements(profile_id, game_data, using_custom_id)
+    if show_update_messages:
+        print("(6/7) Gathering achievement data...\nThis can take upwards of 5 minutes, depending on how many achievements you have, so why not make a cuppa tea.")
+    achievement_data = spy.games_get_achievements(profile_id, game_data, show_update_messages, using_custom_id)
 
     last_vacban = spy.profile_last_vacban(vacban, page_html)
+    
     general_info_data.update({'has_vacban':vacban})
     general_info_data.update({'last_vacban':last_vacban})
 
-    print("(9/9) creating JSON file...")
-    create_json_file_with_gathered_data(general_info_data, game_data, friend_data, award_data, badge_data, group_data, achievement_data, profile_id)
+    if show_update_messages:
+        print("(7/7) creating JSON file...")
+    create_json_file_with_gathered_data(general_info_data, game_data, friend_data, award_data, badge_data, group_data, achievement_data, filename)
 
-    
-    print("JSON file created!")
-    print(f"Process is done, all data saved to '{profile_id}.json'")
+    if show_update_messages:
+        print("JSON file created!")
 
+    print(f"Process is done, all data saved to '{filename}.json'")
 
 if __name__ == "__main__":
     if len(sys.argv) == 3:

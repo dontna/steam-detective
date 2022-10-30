@@ -76,3 +76,51 @@ def init_menu_profile_id():
                 continue
 
             return (choice, False)
+
+def main_menu(general_info_data: dict, profile_id: str):
+    filename = profile_id
+    show_update_messages = True
+
+    while True:
+        os.system("cls" if os.name == 'nt' else 'clear') # Select the correct way to clear a screen, based on OS
+        print(f'''Steam account we are getting information about
+        Steam Alias: {general_info_data['steam_name']}
+        Steam Bio: {general_info_data['bio']}
+        Steam Level: {general_info_data['level']}
+
+        If this is the correct account, type 'start' otherwise exit and try again.
+
+        Also feel free to change any settings below before starting the scan.
+
+        1. Change saved filename (Currently: {filename}.json)
+        2. Toggle update messages: (Currently: {"on" if show_update_messages == True else "off"})
+        0. Exit
+        ''')
+
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            os.system("cls" if os.name == 'nt' else 'clear') # Select the correct way to clear a screen, based on OS
+            print("Note: Changing the filename will not change it's extention!")
+            second_choice = input("Enter new filename for output file: ")
+
+            if second_choice == "":
+                print("Filename cannot be empty, reverting to last filename.")
+                time.sleep(global_sleep_time)
+                continue
+
+            if second_choice.startswith(" ") or second_choice.endswith(" "):
+                time.sleep(global_sleep_time)
+                print("Filename cannot start or end with a space, reverting to last filename.")
+                continue
+
+            filename = second_choice
+        elif choice == "2":
+            show_update_messages = not show_update_messages
+            continue
+        elif choice == "start":
+            return (filename, show_update_messages)
+        elif choice == "0":
+            exit()
+        else:
+            print(f"Invalid option '{choice}', please try again.")
