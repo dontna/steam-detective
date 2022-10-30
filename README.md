@@ -20,22 +20,30 @@ It gathers:
 7. Every group they are a member of, the groups total member count, link to the group, the name of the group and if it is public.
 8. Shows if the user has a VAC or game ban on their account, and if they do how long it has been. With your choice of minutes, hours, days or years.
 
-Now it must be said that this isn't a magical tool. If the user has chosen not to show any of this information, the JSON file will be pretty empty.
+Now it must be said that this isn't a magical tool. If the user has chosen not to show any of this information, the JSON file will be mostly empty.
 
 # How to use it
 Using the script is incredibly easy, but before you use it you need to do:
 
 `pip install requests_html`
 
-which is the scraping module I am using for the script. Once that is done, all you have to do is:
+which is the scraping module I am using for the script. Once that is done you can do:
+
+`python steam-detective.py [profiles_custom_steam_id]`
+
+For example `python steam-detective.py eroticgaben` would show information about Gabe Newell's Steam Account.
+
+to run the script using a Custom Steam ID (aka one a user has set themselves.) or you can use the '--nocustom' flag to use a normal Steam ID.
 
 `python steam-detective.py [profiles_steam_id]`
+
+For example `python steam-detective.py 76561198085278322` would also show information about Gabe Newell's Steam Account.
 
 alternatively you can run the script like:
 
 `python steam-detective.py`
 
-without passing in a id and the script will ask for one once it starts up.
+without passing in a ID, the script will take you through some menus to get input the right ID for your situation.
 
 # Forking
 If you want to fork my project, please go ahead. If you feel like you can add stuff, or even build on top of this to make something cool; please feel free to. You do not have to credit me, but can if you want to.
