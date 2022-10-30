@@ -1,5 +1,5 @@
-import sys, json, os, time, re, concurrent.futures, asyncio, achievements, menus
-from requests_html import HTMLSession, HTMLResponse, AsyncHTMLSession
+import sys, json, os, time, re, menus
+from requests_html import HTMLSession, HTMLResponse
 
 profile_id: str
 
