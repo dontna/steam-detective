@@ -1,10 +1,13 @@
-import sys, json, os, time, re
-from pprint import pprint
-from requests_html import HTMLSession, HTMLResponse
+import sys, json, os, time, re, concurrent.futures, asyncio, achievements, pprint
+from requests_html import HTMLSession, HTMLResponse, AsyncHTMLSession
 
 profile_id: str
 
 class SteamSpy:
+    def __init__(self):
+        self.achievements = []
+        self.achievement_count = 0
+
     def general_get_page_html(self, profile_id: str):
         with HTMLSession() as s:
             r = s.get(f'https://steamcommunity.com/id/{profile_id}')
@@ -68,7 +71,7 @@ class SteamSpy:
         else:
             return True
 
-    def profile_last_vacban(self, has_vacban: bool):
+    def profile_last_vacban(self, has_vacban: bool, page_html):
 
         if has_vacban:
             days = page_html.html.find('div.profile_ban_status:last-child', first=True).text.strip()
@@ -106,6 +109,8 @@ class SteamSpy:
         for game in games_list:
             name = game.find('.gameListRowItemName', first=True).text.strip()
             hours = game.find('.hours_played', first=True).text.replace('hrs on record', '').replace(',', '').replace('.', '').strip()
+            url = game.find('.gameListRowLogo a', first=True).attrs['href']
+            app_id = url.replace('https://steamcommunity.com/app/', '').strip()
 
             if hours == '':
                 hours = 0
@@ -116,6 +121,8 @@ class SteamSpy:
 
             stats = {
                 'name':name,
+                'url':url,
+                'app_id':app_id,
                 'hours_played':hours
             }
 
@@ -311,18 +318,74 @@ class SteamSpy:
 
         return all_group_data
     
-    def profile_get_reviews(self, profile_id: str):
-        with HTMLSession() as s:
-            r = s.get(f'https://steamcommunity.com/id/{profile_id}/')
+    def games_get_achievements(self, profile_id: str, games_data: dict):
+        achievements_all = []
+        total_achievements_count = 0
 
-def create_json_file_with_gathered_data(info: dict, games: list, friends: list, awards: dict, badges: dict, groups: dict, profile_id: str):
+        with HTMLSession() as s:
+            for game in games_data['games']:
+                app_id = game['app_id']
+                game_name = game['name']
+
+                this_game_achievements = []
+
+                r = s.get(f'https://steamcommunity.com/id/{profile_id}/stats/{app_id}/?tab=achievements')
+
+                if r.status_code == 302 or r.status_code == 303:
+                    continue
+                
+                achievements = r.html.find('.achieveRow')
+
+                print(f"Gathering achievements for {game_name}")
+                
+                for achievement in achievements:
+                    try: 
+                        achievement_date_unlocked = achievement.find('.achieveUnlockTime', first=True).text
+                    except AttributeError:
+                        continue
+
+                    achievement_name = achievement.find('h3', first=True).text.strip()
+                    achievement_description = achievement.find('h5', first=True).text.strip()
+
+                    if achievement_name and achievement_description == "":
+                        continue
+                    
+                    data_for_this_achievement = {
+                        'name':achievement_name,
+                        'description':achievement_description,
+                        'date_unlocked':achievement_date_unlocked
+                    }
+
+                    this_game_achievements.append(data_for_this_achievement)
+
+                #if len(this_game_achievements) == 0:
+                #    continue
+
+                all_achievement_data_for_this_game = {
+                    'game_name':game_name,
+                    'achievements_unlocked':len(this_game_achievements),
+                    'achievements':this_game_achievements
+                }
+
+                achievements_all.append(all_achievement_data_for_this_game)
+                total_achievements_count += len(this_game_achievements)
+        
+        full_achievement_data = {
+            'total_achievements':total_achievements_count,
+            'achievements':achievements_all
+        }
+
+        return full_achievement_data
+
+def create_json_file_with_gathered_data(info: dict, games: dict, friends: list, awards: dict, badges: dict, groups: dict, achievements: dict, profile_id: str):
     big_data = {
         'general_info':info,
         'games':games,
         'friends':friends,
         'awards':awards,
         'badges':badges,
-        'groups':groups
+        'groups':groups,
+        'achievements':achievements
     }
 
     data = json.dumps(big_data, indent=4)
@@ -330,50 +393,66 @@ def create_json_file_with_gathered_data(info: dict, games: list, friends: list, 
     with open(f"{os.path.dirname(os.path.realpath(__file__))}/{profile_id}.json", "w") as f:
         f.write(data)
 
+def main(profile_id: str):
+    spy: SteamSpy
+    page_html: HTMLResponse
+    vacban: bool
+
+    friends: list
+
+    awards: dict
+    badges: dict
+    games: dict
+    groups: dict
+    info: dict
+    last_vacban: dict
+    achivements: dict
+
+    spy = SteamSpy()
+
+    print("(1/10) Gathering data, this may take a moment...")
+    page_html = spy.general_get_page_html(profile_id)
+
+    print(f"(2/10) Gathering info about '{profile_id}'")
+    info = spy.general_get_basic_info(page_html)
+
+    print("(3/10) Getting VAC bans...")
+    vacban = spy.profile_has_vacban(page_html)
+
+    print("(4/10) Gathering users games...")
+    games = spy.games_get_list(profile_id)
+
+    print("(5/10) Gathering users friend data...")
+    friends = spy.friends_get_list(profile_id)
+
+    print("(6/10) Getting award data...")
+    awards = spy.profile_get_awards(profile_id)
+
+    print("(7/10) Getting badge data...")
+    badges = spy.profile_get_badges(profile_id)
+
+    print("Geting group data...")
+    groups = spy.profile_get_groups(profile_id)
+
+    print("(9/10) Gathering achievement data...\nThis can take upwards of 5 minutes, depending on how many achievements you have, so why not make a cuppa tea.")
+    time.sleep(1)
+    achievements = spy.games_get_achievements(profile_id, games)
+
+    last_vacban = spy.profile_last_vacban(vacban, page_html)
+    info.update({'has_vacban':vacban})
+    info.update({'last_vacban':last_vacban})
+
+    print("(10/10) creating JSON file...")
+    create_json_file_with_gathered_data(info, games, friends, awards, badges, groups, achievements, profile_id)
+
+    print("JSON file created!")
+    print(f"Process is done, all data saved to '{profile_id}.json'")
+
+
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         profile_id = sys.argv[1]
     else:
         profile_id = input("Enter a steam ID: ")
 
-    spy: SteamSpy
-    page_html: HTMLResponse
-    info: dict
-    vacban: bool
-    last_vacban: dict
-    games: list
-    friends: list
-    awards: dict
-    badges: dict
-    groups: dict
-
-
-    spy = SteamSpy()
-
-    print("(1/9) Gathering data, this may take a moment...")
-    page_html = spy.general_get_page_html(profile_id)
-    print(f"(2/9) Gathering info about '{profile_id}'")
-    info = spy.general_get_basic_info(page_html)
-    print("(3/9) Getting VAC bans...")
-    vacban = spy.profile_has_vacban(page_html)
-    print("(4/9) Gathering users games...")
-    games = spy.games_get_list(profile_id)
-    print("(5/9) Gathering users friend data...")
-    friends = spy.friends_get_list(profile_id)
-    print("(6/9) Getting award data...")
-    awards = spy.profile_get_awards(profile_id)
-    print("(7/9) Getting badge data...")
-    badges = spy.profile_get_badges(profile_id)
-    print("(8/9) Geting group data...")
-    groups = spy.profile_get_groups(profile_id)
-
-    last_vacban = spy.profile_last_vacban(vacban)
-    info.update({'has_vacban':vacban})
-    info.update({'last_vacban':last_vacban})
-
-
-    print("(9/9) creating JSON file...")
-    create_json_file_with_gathered_data(info, games, friends, awards, badges, groups, profile_id)
-
-    print("JSON file created!")
-    print(f"Process is done, all data saved to '{profile_id}.json'")
+    main(profile_id)
