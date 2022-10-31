@@ -433,7 +433,8 @@ def main(profile_id: str, using_custom_id: bool):
 
     has_vacban = spy.profile_has_vacban(page_html)
 
-    filename, show_update_messages = menus.main_menu(general_info_data, profile_id)
+    script_path = os.path.dirname(os.path.realpath(__file__))
+    filename, show_update_messages = menus.main_menu(general_info_data, profile_id, using_custom_id, script_path)
 
     os.system("cls" if os.name == 'nt' else 'clear') # Select the correct way to clear a screen, based on OS
 
