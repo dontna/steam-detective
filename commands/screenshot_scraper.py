@@ -35,13 +35,15 @@ class SteamScreenshotScraper():
                 image = r.html.find('.actualmediactn a', first=True).attrs['href']
                 screenshot_links.append(image)
 
-        #print(len(screenshot_links))
         print(f"Gathered {len(screenshot_links)}")
         return screenshot_links
 
     def download_screenshots(self, links: list, folder_path: str, parent_folder_name:str):
         if not os.path.exists(f"{folder_path}/{parent_folder_name}"):
             os.mkdir(f"{folder_path}/{parent_folder_name}")
+        
+        if not os.path.exists(f"{folder_path}/{parent_folder_name}/screenshots"):
+            os.mkdir(f"{folder_path}/{parent_folder_name}/screenshots")
 
         link_length = len(links)
         for i, link in enumerate(links):
@@ -51,7 +53,7 @@ class SteamScreenshotScraper():
                 
                 pic_data = r.html.raw_html
 
-                with open(f"{folder_path}/{parent_folder_name}/{i}.jpg", "wb") as f:
+                with open(f"{folder_path}/{parent_folder_name}/screenshots/{i}.jpg", "wb") as f:
                     f.write(pic_data)
 
 

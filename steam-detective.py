@@ -326,7 +326,7 @@ class SteamSpy:
                 group_data = {
                     'group_title':group_name,
                     'group_url':group_link,
-                    'public':is_public,
+                    'public':public,
                     'total_members':int(members)
                 }
                 
@@ -405,7 +405,7 @@ class SteamSpy:
 
         return full_achievement_data
 
-def create_json_file_with_gathered_data(general_info_data: dict, game_data: dict, friend_data: list, award_data: dict, badge_data: dict, group_data: dict, achievement_data: dict, profile_id: str):
+def create_json_file_with_gathered_data(general_info_data: dict, game_data: dict, friend_data: list, award_data: dict, badge_data: dict, group_data: dict, achievement_data: dict, filename: str, folder_path: str, parent_folder_name: str):
     ''' Creates a .JSON file in the same directory as the script, with the profile_id as the name. '''
     all_data = {
         'general_info':general_info_data,
@@ -419,7 +419,10 @@ def create_json_file_with_gathered_data(general_info_data: dict, game_data: dict
 
     data = json.dumps(all_data, indent=4)
 
-    with open(f"{os.path.dirname(os.path.realpath(__file__))}/{profile_id}.json", "w") as f:
+    if not os.path.exists(f"{folder_path}/{parent_folder_name}"):
+        os.mkdir(f"{folder_path}/{parent_folder_name}")
+
+    with open(f"{folder_path}/{parent_folder_name}/{filename}.json", "w") as f:
         f.write(data)
 
 def main(profile_id: str, using_custom_id: bool):
@@ -434,7 +437,7 @@ def main(profile_id: str, using_custom_id: bool):
     has_vacban = spy.profile_has_vacban(page_html)
 
     script_path = os.path.dirname(os.path.realpath(__file__))
-    filename, show_update_messages = menus.main_menu(general_info_data, profile_id, using_custom_id, script_path)
+    filename, show_update_messages, folder_name = menus.main_menu(general_info_data, profile_id, using_custom_id, script_path)
 
     os.system("cls" if os.name == 'nt' else 'clear') # Select the correct way to clear a screen, based on OS
 
@@ -470,7 +473,7 @@ def main(profile_id: str, using_custom_id: bool):
 
     if show_update_messages:
         print("(7/7) creating JSON file...")
-    create_json_file_with_gathered_data(general_info_data, game_data, friend_data, award_data, badge_data, group_data, achievement_data, filename)
+    create_json_file_with_gathered_data(general_info_data, game_data, friend_data, award_data, badge_data, group_data, achievement_data, filename, script_path, folder_name)
 
     if show_update_messages:
         print("JSON file created!")
