@@ -11,10 +11,13 @@ class SteamSpy:
         ''' Get profile page HTML, so we don't have to keep sending out requests to the server. '''
         with HTMLSession() as s:
             if using_custom_id:
-                return s.get(f'https://steamcommunity.com/id/{profile_id}')
+                r = s.get(f'https://steamcommunity.com/id/{profile_id}')
             else:
-                return s.get(f'https://steamcommunity.com/profiles/{profile_id}')
+                r = s.get(f'https://steamcommunity.com/profiles/{profile_id}')
 
+            return r
+
+        
     def general_get_basic_info(self, page_html: HTMLResponse):
         '''Get all basic information, such as: name, bio, level etc.'''
         steam_name: str

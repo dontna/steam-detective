@@ -1,4 +1,4 @@
-import time, os, commands.screenshot_scraper
+import time, os, commands.screenshot_scraper, commands.snapshot
 
 ### GLOBAL VARIABLES ###
 global_sleep_time = 2 # The amount of seconds the error text will show on a menu, before continuing the loop.
@@ -117,6 +117,7 @@ def main_menu(general_info_data: dict, steam_id: str, using_custom_id: bool, fol
         TEXT OPTIONS:
         {TEXT_FORMATTING_DICTIONARY['bold']}start {TEXT_COLOUR_DICTIONARY['blue']}Start The Detective, and scrape all data.{TEXT_FORMATTING_DICTIONARY['normal']}
         {TEXT_FORMATTING_DICTIONARY['bold']}screenshots {TEXT_COLOUR_DICTIONARY['blue']}Scrape and Download the users screenshots.{TEXT_FORMATTING_DICTIONARY['normal']}
+        {TEXT_FORMATTING_DICTIONARY['bold']}snapshot {TEXT_COLOUR_DICTIONARY['blue']}Create a snapshot of the users profile page.{TEXT_FORMATTING_DICTIONARY['normal']}
 
         NUMERIC OPTIONS:
         {TEXT_FORMATTING_DICTIONARY['bold']}1. {TEXT_COLOUR_DICTIONARY['blue']}Change saved filename {TEXT_FORMATTING_DICTIONARY['normal']}(Currently: {filename}.json)
@@ -161,13 +162,17 @@ def main_menu(general_info_data: dict, steam_id: str, using_custom_id: bool, fol
 
             master_folder_name = choice2
         elif choice == "start":
-            return (filename, show_update_messages, master_folder_name)
+            break
         elif choice == "screenshots":
             screenshot_scrape_menu(general_info_data, steam_id, using_custom_id, folder_path, master_folder_name)
+        elif choice == "snapshot":
+            snapshot_menu(steam_id, using_custom_id, folder_path, master_folder_name)
         elif choice == "0":
             exit()
         else:
             print(f"Invalid option '{choice}', please try again.")
+
+    return (filename, show_update_messages, master_folder_name)
 
 def screenshot_scrape_menu(general_info_data: dict, steam_id: str, using_custom_id: bool, folder_path: str, parent_folder_name: str):
     num_of_screenshots = int(general_info_data['screenshots'])
@@ -203,4 +208,25 @@ def screenshot_scrape_menu(general_info_data: dict, steam_id: str, using_custom_
     
     #main_menu(general_info_data, steam_id, using_custom_id, folder_path)
 
+def snapshot_menu(steam_id: str, using_custom_id: bool, folder_path: str, parent_folder_name: str):
+    while True:
+        os.system("cls" if os.name == 'nt' else 'clear') # Select the correct way to clear a screen, based on OS
+        print(f'''You have chosen to take a snapshot of a users profile. This will grab the html of the page and save it in '{folder_path}/{parent_folder_name}/snapshots/[current_date_and_time]/index.html'
+
+        This will only create a snapshot of their main profile page, and will not create snapshots of their Games, Friends ect.
+
         
+        {TEXT_FORMATTING_DICTIONARY['bold']}1. {TEXT_COLOUR_DICTIONARY['blue']}Create snapshot. {TEXT_FORMATTING_DICTIONARY['normal']}
+        {TEXT_FORMATTING_DICTIONARY['bold']}0. Back{TEXT_FORMATTING_DICTIONARY['normal']}
+        ''')
+
+        choice = input(f"Enter your choice: {TEXT_FORMATTING_DICTIONARY['bold']}{TEXT_COLOUR_DICTIONARY['green']}")
+        print(f"{TEXT_FORMATTING_DICTIONARY['normal']}")
+
+        if choice == "1" or choice == 1:
+            commands.snapshot.get_and_save_steam_snapshot(steam_id, using_custom_id, folder_path, parent_folder_name)
+            break
+        elif choice == "0" or choice1 == 0:
+            break
+        else:
+            print(f"{choice} is not a valid option, please try again.")
