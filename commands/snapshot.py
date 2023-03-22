@@ -25,8 +25,4 @@ def get_and_save_steam_snapshot(steam_id: str, using_custom_id: bool, folder_pat
         f.write(html)
 
     print(f"Snapshot saved to '{folder_path}/{folder_name}/snapshots/{sub_folder_name}/index.html'")
-    choice = input("Press enter to return to main menu...")
-
-#get_and_save_steam_snapshot("solopalmmakeup", True, "/home/peter/python/steamspy", "solopalmmakeup")
-        
-        
+    choice = input("Press enter to return to main menu...")  
