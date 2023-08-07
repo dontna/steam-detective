@@ -1,3 +1,10 @@
+# Important Note
+Recently there has been an update to the Steam site, which is where this script scrapes its information from. This update has made it so you cannot access other profile's games / achievements without logging in. This means the script WILL NOT be able to scrape game data, playtime or achievement progress for now. I may update the script in the future to fix this issue, however I understand most people wouldn't be okay with logging into their account through a random Python script on the internet; so I will try to find a workaround.
+
+As of the 7th of August 2023, the script can still scrape: Awards, General Info, Friends, Badges and groups. As soon as I figure out a workaround to these issues, I will update the script.
+
+Thanks for your understanding, and I hope the script can still be a useful tool to you.
+
 # steam-detective
 A Python script that allows you to get information on a profile, saved in JSON format.
 
