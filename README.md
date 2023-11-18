@@ -19,14 +19,14 @@ The script allows you to give a Steam ID for any profile, it then scrapes public
 It gathers:
 
 1. General information, an overview of the profile.
-2. A list of every game, their title and the hours they have played for.
-3. The total ammount of time they have spent playing games on Steam, with your choice of minutes, hours, days or years.
+2. ~~A list of every game, their title and the hours they have played for.~~
+3. ~~The total ammount of time they have spent playing games on Steam, with your choice of minutes, hours, days or years.~~
 4. All of the users friends, their Steam IDs, Profile URLs and current Steam alias.
 5. A full list of their awards, the ones they have given and recieved.
 6. Every badge the user has collected, plus the total amount of experience gained from the badges.
 7. All groups they are a member of, the groups total member count, link to the group, the name of the group and if it is public.
-8. Shows if the user has a VAC or game ban on their account, and if they do how long it has been; with your choice of minutes, hours, days or years.
-9. Gets a list of all unlocked achievements on their account, plus an overview of the total amount of achievements they've unlocked.
+8. ~~Shows if the user has a VAC or game ban on their account, and if they do how long it has been; with your choice of minutes, hours, days or years.~~
+9. ~~Gets a list of all unlocked achievements on their account, plus an overview of the total amount of achievements they've unlocked.~~
 
 Now it must be said that this isn't a magical tool. If the user has chosen not to show any of this information, the script will not bypass that to get information.
 
